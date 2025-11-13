@@ -1,0 +1,217 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard de Leituras{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Cabeçalho -->
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">
+                <i class="bi bi-clipboard-data text-primary me-2"></i>
+                {% if nome_equipamento %}
+                    {{ nome_equipamento }}
+                {% else %}
+                    Dashboard de Leituras
+                {% endif %}
+            </h2>
+            <div>
+                <form method="POST" action="{% url 'leituras:agregar' %}" class="d-inline">
+                    {% csrf_token %}
+                    {% if filters.id_cliente %}
+                    <input type="hidden" name="id_cliente" value="{{ filters.id_cliente }}">
+                    {% endif %}
+                    {% if filters.id_equipamento %}
+                    <input type="hidden" name="id_equipamento" value="{{ filters.id_equipamento }}">
+                    {% endif %}
+                    {% if filters.data_inicio %}
+                    <input type="hidden" name="data_inicio" value="{{ filters.data_inicio }}">
+                    {% endif %}
+                    {% if filters.data_fim %}
+                    <input type="hidden" name="data_fim" value="{{ filters.data_fim }}">
+                    {% endif %}
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-arrow-repeat me-2"></i>Atualizar Dados
+                    </button>
+                </form>
+                <a href="{% url 'leituras:exportar' %}?{{ filters.urlencode }}" class="btn btn-success ms-2">
+                    <i class="bi bi-download me-2"></i>Exportar CSV
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="col-md-6 col-lg-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1">Total de Leituras</p>
+                        <h3 class="mb-0">{{ total_leituras }}</h3>
+                    </div>
+                    <div class="text-primary">
+                        <i class="bi bi-bar-chart-fill" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1">Última Atualização</p>
+                        <h6 class="mb-0">
+                            {% if ultima_atualizacao %}
+                                {{ ultima_atualizacao|date:"d/m/Y H:i" }}
+                            {% else %}
+                                Nunca
+                            {% endif %}
+                        </h6>
+                    </div>
+                    <div class="text-success">
+                        <i class="bi bi-clock-fill" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-funnel me-2"></i>Filtros
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="GET" action="{% url 'leituras:index' %}">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Cliente</label>
+                            <select name="id_cliente" class="form-select">
+                                <option value="">Todos</option>
+                                {% for cliente in clientes %}
+                                <option value="{{ cliente }}" {% if filters.id_cliente == cliente %}selected{% endif %}>
+                                    {{ cliente }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label class="form-label">Equipamento</label>
+                            <select name="id_equipamento" class="form-select">
+                                <option value="">Todos</option>
+                                {% for equipamento in equipamentos %}
+                                <option value="{{ equipamento }}" {% if filters.id_equipamento == equipamento %}selected{% endif %}>
+                                    {{ equipamento }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-2">
+                            <label class="form-label">Data Início</label>
+                            <input type="date" name="data_inicio" class="form-control" value="{{ filters.data_inicio }}">
+                        </div>
+                        
+                        <div class="col-md-2">
+                            <label class="form-label">Data Fim</label>
+                            <input type="date" name="data_fim" class="form-control" value="{{ filters.data_fim }}">
+                        </div>
+                        
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-search me-2"></i>Filtrar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela de Dados -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-table me-2"></i>Dados Agregados
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Equipamento</th>
+                                <th>Período Início</th>
+                                <th>Período Fim</th>
+                                {% if colunas_visiveis.brunidores %}
+                                <th>Corrente Brunidores (Média)</th>
+                                {% endif %}
+                                {% if colunas_visiveis.descascadores %}
+                                <th>Corrente Descascadores (Média)</th>
+                                {% endif %}
+                                {% if colunas_visiveis.polidores %}
+                                <th>Corrente Polidores (Média)</th>
+                                {% endif %}
+                                {% if colunas_visiveis.temperatura %}
+                                <th>Temperatura (Média)</th>
+                                {% endif %}
+                                {% if colunas_visiveis.umidade %}
+                                <th>Umidade (Média)</th>
+                                {% endif %}
+                                {% if colunas_visiveis.grandezas_eletricas %}
+                                <th>Tensão R (Média)</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for leitura in leituras %}
+                            <tr>
+                                <td>{{ leitura.id_cliente }}</td>
+                                <td>{{ leitura.id_equipamento }}</td>
+                                <td>{{ leitura.periodo_inicio|date:"d/m/Y H:i" }}</td>
+                                <td>{{ leitura.periodo_fim|date:"d/m/Y H:i" }}</td>
+                                {% if colunas_visiveis.brunidores %}
+                                <td>{{ leitura.corrente_brunidores_media|default:"-" }}</td>
+                                {% endif %}
+                                {% if colunas_visiveis.descascadores %}
+                                <td>{{ leitura.corrente_descascadores_media|default:"-" }}</td>
+                                {% endif %}
+                                {% if colunas_visiveis.polidores %}
+                                <td>{{ leitura.corrente_polidores_media|default:"-" }}</td>
+                                {% endif %}
+                                {% if colunas_visiveis.temperatura %}
+                                <td>{{ leitura.temperatura_media|default:"-" }}</td>
+                                {% endif %}
+                                {% if colunas_visiveis.umidade %}
+                                <td>{{ leitura.umidade_media|default:"-" }}</td>
+                                {% endif %}
+                                {% if colunas_visiveis.grandezas_eletricas %}
+                                <td>{{ leitura.tensao_r_media|default:"-" }}</td>
+                                {% endif %}
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="20" class="text-center py-4 text-muted">
+                                    <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                                    <p class="mt-2">Nenhuma leitura encontrada</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
