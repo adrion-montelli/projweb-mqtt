@@ -1,0 +1,308 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard Principal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Título da Página -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-6 fw-bold">
+                <i class="material-icons" style="vertical-align: middle; font-size: 2.5rem;">dashboard</i>
+                Dashboard de Leituras
+            </h1>
+            <p class="text-muted lead">Monitoramento em tempo real de sensores e equipamentos</p>
+        </div>
+    </div>
+
+    <!-- Alertas e Mensagens -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Cards Informativos -->
+    <div class="row mb-4">
+        <!-- Card Total de Registros -->
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card info-card primary shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="card-text text-muted mb-1">Total de Registros</p>
+                            <h4 class="mb-0 fw-bold">{{ total_leituras|default:"0" }}</h4>
+                            <small class="text-muted">leituras registradas</small>
+                        </div>
+                        <div class="info-card-icon">
+                            <i class="material-icons">storage</i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card Temperatura Média -->
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card info-card success shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="card-text text-muted mb-1">Temperatura Média</p>
+                            <h4 class="mb-0 fw-bold">
+                                {% if media_temperatura is not None %}
+                                    {{ media_temperatura|floatformat:2 }} °C
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </h4>
+                            <small class="text-muted">graus celsius</small>
+                        </div>
+                        <div class="info-card-icon">
+                            <i class="material-icons">thermostat</i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card Última Leitura -->
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card info-card info shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="card-text text-muted mb-1">Última Leitura</p>
+                            <h4 class="mb-0 fw-bold">
+                                {% if ultima_leitura %}
+                                    {{ ultima_leitura.periodo_fim|date:"H:i" }}
+                                {% else %}
+                                    --:--
+                                {% endif %}
+                            </h4>
+                            <small class="text-muted">
+                                {% if ultima_leitura %}
+                                    {{ ultima_leitura.periodo_fim|date:"d/m/Y" }}
+                                {% else %}
+                                    sem dados
+                                {% endif %}
+                            </small>
+                        </div>
+                        <div class="info-card-icon">
+                            <i class="material-icons">access_time</i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card Status do Sistema -->
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card info-card warning shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="card-text text-muted mb-1">Status do Sistema</p>
+                            <h4 class="mb-0 fw-bold text-success">
+                                <i class="material-icons" style="vertical-align: middle; font-size: 1.5rem;">check_circle</i>
+                                Operacional
+                            </h4>
+                            <small class="text-muted">Sistema funcionando normalmente</small>
+                        </div>
+                        <div class="info-card-icon">
+                            <i class="material-icons">monitor_heart</i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficos Interativos -->
+    <div class="row">
+        <!-- Gráfico de Temperatura -->
+        <div class="col-lg-6 mb-4">
+            <div class="card chart-card shadow-sm">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="material-icons" style="vertical-align: middle;">show_chart</i>
+                        Histórico de Temperatura
+                    </h5>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-outline-primary" onclick="updateChartRange('7d')">7d</button>
+                        <button type="button" class="btn btn-outline-primary active" onclick="updateChartRange('30d')">30d</button>
+                        <button type="button" class="btn btn-outline-primary" onclick="updateChartRange('90d')">90d</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="temperatureChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico de Corrente -->
+        <div class="col-lg-6 mb-4">
+            <div class="card chart-card shadow-sm">
+                <div class="card-header py-3">
+                    <h5 class="mb-0">
+                        <i class="material-icons" style="vertical-align: middle;">electrical_services</i>
+                        Distribuição de Corrente
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="currentChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela de Dados Recentes -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header py-3">
+                    <h5 class="mb-0">
+                        <i class="material-icons" style="vertical-align: middle;">table_chart</i>
+                        Leituras Recentes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if leituras %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Cliente</th>
+                                        <th>Equipamento</th>
+                                        <th>Temperatura</th>
+                                        <th>Corrente</th>
+                                        <th>Data/Hora</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for leitura in leituras %}
+                                        <tr>
+                                            <td><strong>{{ leitura.id_cliente }}</strong></td>
+                                            <td>{{ leitura.id_equipamento }}</td>
+                                            <td>
+                                                <span class="badge bg-info">
+                                                    {% if leitura.temperatura_media %}
+                                                        {{ leitura.temperatura_media|floatformat:2 }} °C
+                                                    {% else %}
+                                                        N/A
+                                                    {% endif %}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-warning">
+                                                    {% if leitura.corrente_brunidores_media %}
+                                                        {{ leitura.corrente_brunidores_media|floatformat:2 }} A
+                                                    {% else %}
+                                                        N/A
+                                                    {% endif %}
+                                                </span>
+                                            </td>
+                                            <td><small>{{ leitura.periodo_fim|date:"d/m/Y H:i:s" }}</small></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-info" title="Ver Detalhes">
+                                                    <i class="material-icons" style="font-size: 1rem;">info</i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning text-center">
+                            <i class="material-icons" style="vertical-align: middle;">warning</i>
+                            Nenhuma leitura disponível no momento.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros (Opcional) -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header py-3">
+                    <h5 class="mb-0">
+                        <i class="material-icons" style="vertical-align: middle;">filter_list</i>
+                        Filtros Avançados
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="filter-form" method="get" action="" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="id_cliente" class="form-label">Cliente</label>
+                            <select name="id_cliente" id="id_cliente" class="form-select">
+                                <option value="">-- Todos --</option>
+                                {% for cliente in clientes %}
+                                    <option value="{{ cliente }}" {% if cliente == filtro_cliente %}selected{% endif %}>{{ cliente }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="id_equipamento" class="form-label">Equipamento</label>
+                            <select name="id_equipamento" id="id_equipamento" class="form-select">
+                                <option value="">-- Todos --</option>
+                                {% for equipamento in equipamentos %}
+                                    <option value="{{ equipamento }}" {% if equipamento == filtro_equipamento %}selected{% endif %}>{{ equipamento }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="data_inicio" class="form-label">Data Início</label>
+                            <input type="date" name="data_inicio" id="data_inicio" class="form-control" value="{{ filtro_data_inicio }}">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="data_fim" class="form-label">Data Fim</label>
+                            <input type="date" name="data_fim" id="data_fim" class="form-control" value="{{ filtro_data_fim }}">
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end gap-2">
+                            <button type="submit" class="btn btn-primary w-50">
+                                <i class="material-icons" style="vertical-align: middle;">search</i>
+                                Filtrar
+                            </button>
+                            <a href="{% url 'dashboard' %}" class="btn btn-secondary w-50">
+                                <i class="material-icons" style="vertical-align: middle;">refresh</i>
+                                Limpar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    /**
+     * Atualizar intervalo do gráfico
+     */
+    function updateChartRange(range) {
+        console.log('Atualizando gráfico para:', range);
+        // Implementar lógica de atualização de dados
+    }
+
+    /**
+     * Inicializar gráficos quando a página carregar
+     */
+    document.addEventListener('DOMContentLoaded', function() {
+        // Gráficos serão inicializados pelo dashboard.js
+        console.log('Dashboard iniciado!');
+    });
+</script>
+
+{% endblock %}

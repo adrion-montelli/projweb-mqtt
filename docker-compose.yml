@@ -1,0 +1,83 @@
+version: '3.9'
+
+services:
+  # Banco de Dados MySQL
+  mysql:
+    image: mysql:8.0
+    container_name: leituras-mysql
+    environment:
+      MYSQL_DATABASE: leituras_db
+      MYSQL_USER: leituras_user
+      MYSQL_PASSWORD: senha_segura_aqui
+      MYSQL_ROOT_PASSWORD: root_password_aqui
+      MYSQL_CHARACTER_SET_SERVER: utf8mb4
+      MYSQL_COLLATION_SERVER: utf8mb4_unicode_ci
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - leituras-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Aplicação Django
+  web:
+    build: .
+    container_name: leituras-web
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py createsuperuser --noinput --username admin --email admin@example.com || true &&
+             gunicorn leituras_project.wsgi:application --bind 0.0.0.0:8000 --workers 4"
+    environment:
+      - DEBUG=False
+      - SECRET_KEY=seu-secret-key-aqui-mudar-em-producao
+      - ALLOWED_HOSTS=localhost,127.0.0.1,web
+      - USE_MYSQL=True
+      - DB_ENGINE=django.db.backends.mysql
+      - DB_DATABASE=leituras_db
+      - DB_USERNAME=leituras_user
+      - DB_PASSWORD=senha_segura_aqui
+      - DB_HOST=mysql
+      - DB_PORT=3306
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - leituras-network
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+
+  # Nginx (Reverse Proxy - Opcional)
+  nginx:
+    image: nginx:alpine
+    container_name: leituras-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./staticfiles:/app/staticfiles:ro
+    depends_on:
+      - web
+    networks:
+      - leituras-network
+    restart: unless-stopped
+
+networks:
+  leituras-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local

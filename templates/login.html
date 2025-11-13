@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - Dashboard de Leituras{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-center align-items-center" style="min-height: calc(100vh - 150px);">
+    <div class="col-12 col-sm-8 col-md-6 col-lg-4">
+        <!-- Card de Login -->
+        <div class="card shadow-lg border-0">
+            <!-- Header do Card -->
+            <div class="card-header bg-primary text-white text-center py-4">
+                <i class="material-icons" style="font-size: 3rem;">lock</i>
+                <h3 class="mt-2 mb-0">Dashboard de Leituras</h3>
+                <p class="mb-0" style="font-size: 0.9rem;">Acesso Seguro</p>
+            </div>
+
+            <!-- Body do Card -->
+            <div class="card-body p-4">
+                <!-- Mensagens de Erro -->
+                {% if form.errors %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="material-icons" style="vertical-align: middle;">error</i>
+                        <strong>Erro de Autenticação!</strong>
+                        <p class="mb-0">Seu nome de usuário ou senha estão incorretos. Por favor, tente novamente.</p>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+                    </div>
+                {% endif %}
+
+                <!-- Formulário de Login -->
+                <form method="post" action="{% url 'login' %}" class="needs-validation">
+                    {% csrf_token %}
+
+                    <!-- Campo de Usuário -->
+                    <div class="mb-3">
+                        <label for="id_username" class="form-label">
+                            <i class="material-icons" style="vertical-align: middle; font-size: 1.2rem;">person</i>
+                            Usuário
+                        </label>
+                        <input 
+                            type="text" 
+                            name="username" 
+                            id="id_username" 
+                            class="form-control form-control-lg" 
+                            placeholder="Digite seu usuário"
+                            required 
+                            autofocus
+                        >
+                        <small class="form-text text-muted d-block mt-1">Use suas credenciais de acesso</small>
+                    </div>
+
+                    <!-- Campo de Senha -->
+                    <div class="mb-4">
+                        <label for="id_password" class="form-label">
+                            <i class="material-icons" style="vertical-align: middle; font-size: 1.2rem;">vpn_key</i>
+                            Senha
+                        </label>
+                        <input 
+                            type="password" 
+                            name="password" 
+                            id="id_password" 
+                            class="form-control form-control-lg" 
+                            placeholder="Digite sua senha"
+                            required
+                        >
+                        <small class="form-text text-muted d-block mt-1">Sua senha é confidencial</small>
+                    </div>
+
+                    <!-- Checkbox Lembrar -->
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                        <label class="form-check-label" for="remember">
+                            Manter-me conectado
+                        </label>
+                    </div>
+
+                    <!-- Botão Entrar -->
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg fw-bold">
+                            <i class="material-icons" style="vertical-align: middle;">login</i>
+                            Entrar no Dashboard
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Separador -->
+                <hr class="my-4">
+
+                <!-- Links Adicionais -->
+                <div class="text-center">
+                    <small class="text-muted">
+                        <p class="mb-2">Problemas para entrar?</p>
+                        <a href="#" class="text-decoration-none">Recuperar Senha</a> | 
+                        <a href="#" class="text-decoration-none">Contato</a>
+                    </small>
+                </div>
+            </div>
+
+            <!-- Footer do Card -->
+            <div class="card-footer bg-light text-center py-3">
+                <small class="text-muted">
+                    &copy; 2024 Dashboard de Leituras. Todos os direitos reservados.
+                </small>
+            </div>
+        </div>
+
+        <!-- Informações Adicionais -->
+        <div class="mt-4 text-center">
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                <i class="material-icons" style="vertical-align: middle;">info</i>
+                <strong>Informação!</strong>
+                <p class="mb-0">Este é um sistema seguro. Suas credenciais são protegidas.</p>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Animação de entrada
+    document.addEventListener('DOMContentLoaded', function() {
+        const card = document.querySelector('.card');
+        card.style.animation = 'slideIn 0.5s ease';
+    });
+
+    // Validação de formulário
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const username = document.getElementById('id_username').value.trim();
+        const password = document.getElementById('id_password').value;
+
+        if (!username || !password) {
+            e.preventDefault();
+            alert('Por favor, preencha todos os campos!');
+        }
+    });
+</script>
+
+<style>
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+{% endblock %}

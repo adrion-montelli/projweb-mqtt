@@ -1,226 +1,423 @@
-# Sistema de Leituras - Django
+# Dashboard de Leituras de Sensores - Guia Completo
 
-Sistema de monitoramento e agregação de leituras de sensores desenvolvido com Django.
+## 🎯 Sobre o Projeto
 
-## 📋 Requisitos
+O **Dashboard de Leituras de Sensores** é uma aplicação Django moderna e responsiva para monitoramento em tempo real de dados de sensores. A aplicação oferece uma interface intuitiva com gráficos interativos, cards informativos e um sistema robusto de autenticação.
 
-- Python 3.8+
-- MySQL 5.7+ (ou SQLite para desenvolvimento)
-- Node.js 16+ (para build de assets)
-- pip
+### ✨ Funcionalidades Principais
 
-## 🚀 Instalação
+- **🔐 Autenticação Segura**: Sistema de login integrado com Django
+- **📊 Gráficos Interativos**: Visualização de dados com Chart.js
+- **📱 Responsivo**: Interface totalmente adaptável para dispositivos móveis
+- **🎨 Tema Escuro**: Suporte completo a dark mode com localStorage
+- **💾 Gerenciamento de Dados**: MySQL integrado para produção
+- **⚡ Performance**: Otimizado com caching e compressão
+- **🔄 API RESTful**: Endpoints JSON para integração com frontend
 
-1. **Clone o repositório e navegue até a pasta**
+---
 
-2. **Crie um ambiente virtual**
+## 📋 Pré-requisitos
+
+### Sistema Operacional
+- Windows 10+, macOS, ou Linux
+
+### Softwares Necessários
+- **Python** 3.8 ou superior
+- **pip** (gerenciador de pacotes Python)
+- **MySQL** (opcional, SQLite disponível para desenvolvimento)
+- **Git** (para controle de versão)
+
+### Verificar Versões
 ```bash
+python --version
+pip --version
+mysql --version  # Se usar MySQL
+```
+
+---
+
+## 🚀 Instalação e Configuração
+
+### 1️⃣ Clonar o Repositório
+```bash
+git clone https://github.com/adrion-montelli/projweb-mqtt.git
+cd projweb-mqtt
+```
+
+### 2️⃣ Criar Ambiente Virtual
+```bash
+# Windows
 python -m venv venv
-```
-
-3. **Ative o ambiente virtual**
-- Windows:
-```bash
 venv\Scripts\activate
-```
-- Linux/Mac:
-```bash
+
+# macOS/Linux
+python3 -m venv venv
 source venv/bin/activate
 ```
 
-4. **Instale as dependências Python**
+### 3️⃣ Instalar Dependências
 ```bash
 pip install -r requirements.txt
 ```
-> Observação: o projeto utiliza `PyMySQL`, que não requer compilação no Windows.
 
-5. **Instale as dependências Node.js**
-```bash
-npm install
-```
+### 4️⃣ Configurar Variáveis de Ambiente
+Criar arquivo `.env` na raiz do projeto (baseado em `.env.example`):
 
-6. **Configure o banco de dados**
-- Crie um arquivo `.env` na raiz do projeto
-- Configure as credenciais do MySQL (adicione `USE_MYSQL=true` para ativar):
 ```env
-USE_MYSQL=true
+# Django
+SECRET_KEY=sua-chave-secreta-aqui
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+# Banco de Dados
+USE_MYSQL=False
 DB_DATABASE=leituras_db
 DB_USERNAME=root
-DB_PASSWORD=sua_senha
+DB_PASSWORD=sua-senha
 DB_HOST=127.0.0.1
 DB_PORT=3306
-```
-- Sem `USE_MYSQL=true`, o projeto utilizará automaticamente SQLite (`database/database.sqlite`).
 
-7. **Execute as migrations**
+# Aplicação
+APP_NAME=Dashboard de Leituras
+TIME_ZONE=America/Sao_Paulo
+LANGUAGE_CODE=pt-br
+```
+
+### 5️⃣ Executar Migrações
 ```bash
-python manage.py makemigrations
 python manage.py migrate
 ```
 
-8. **Crie um superusuário (opcional)**
+### 6️⃣ Criar Superusuário
 ```bash
 python manage.py createsuperuser
+# Preencha com seu username, email e senha
 ```
 
-9. **Compile os assets estáticos**
+### 7️⃣ Coletar Arquivos Estáticos
 ```bash
-npm run build
+python manage.py collectstatic --noinput
 ```
 
-10. **Execute o servidor de desenvolvimento**
+---
+
+## 🏃 Executar a Aplicação
+
+### Desenvolvimento Local
 ```bash
 python manage.py runserver
 ```
 
-11. **Acesse o sistema**
-- Frontend: http://127.0.0.1:8000
-- Admin: http://127.0.0.1:8000/admin
+Acesse em: **http://localhost:8000**
+
+### Com Gunicorn (Produção)
+```bash
+gunicorn leituras_project.wsgi:application --bind 0.0.0.0:8000 --workers 4
+```
+
+---
 
 ## 📁 Estrutura do Projeto
 
 ```
-leituras_project/           # Configurações do projeto Django
-├── settings.py            # Configurações principais
-├── urls.py               # URLs principais
-├── wsgi.py              # WSGI config
-└── asgi.py              # ASGI config
-
-leituras/                 # App principal
-├── models.py            # Models Django
-├── views.py             # Views (controllers)
-├── urls.py              # URLs do app
-├── admin.py             # Configuração do Django Admin
-└── management/
-    └── commands/
-        └── agregar_leituras.py  # Comando customizado
-
-templates/               # Templates HTML Django
-├── base.html           # Template base
-└── leituras/
-    └── index.html      # Template principal
-
-static/                 # Arquivos estáticos
-├── src/               # Código fonte (CSS/JS)
-│   ├── css/
-│   └── js/
-├── dist/              # Arquivos compilados (gerado pelo Vite)
-└── images/            # Imagens
-
-database/              # Banco de dados
-└── database.sqlite    # SQLite (desenvolvimento)
+ProjetoFinalRev4/
+├── leituras/                     # App principal Django
+│   ├── models.py                 # Modelos de dados
+│   ├── views.py                  # Lógica de views
+│   ├── urls.py                   # Rotas da app
+│   ├── admin.py                  # Configurações de admin
+│   ├── management/               # Comandos customizados
+│   │   └── commands/
+│   │       ├── agregar_leituras.py
+│   │       └── contar_registros.py
+│   └── migrations/               # Migrações de banco
+│
+├── leituras_project/             # Configurações do projeto
+│   ├── settings.py               # Configurações Django
+│   ├── urls.py                   # URLs principais
+│   ├── wsgi.py                   # Configuração WSGI
+│   └── asgi.py                   # Configuração ASGI
+│
+├── templates/                    # Templates HTML
+│   ├── base.html                 # Template base (navbar, footer)
+│   ├── login.html                # Página de login
+│   ├── dashboard.html            # Dashboard principal
+│   └── leituras/
+│       └── index.html            # Listagem de leituras
+│
+├── static/                       # Arquivos estáticos
+│   ├── images/
+│   │   └── favicon.ico
+│   └── src/
+│       ├── css/
+│       │   ├── style.css         # Estilos customizados
+│       │   └── app.css           # Estilos da app
+│       └── js/
+│           ├── dashboard.js      # Scripts do dashboard
+│           └── app.js            # Scripts gerais
+│
+├── staticfiles/                  # Arquivos estáticos coletados (produção)
+│
+├── .env.example                  # Template de variáveis de ambiente
+├── requirements.txt              # Dependências Python
+├── manage.py                     # Gerenciador Django
+├── README.md                     # Este arquivo
+└── database/                     # Diretório para arquivos de banco local
 ```
 
-## 🔧 Comandos Disponíveis
+---
 
-### Agregar dados
-```bash
-python manage.py agregar_leituras --periodo hora
+## 🔧 Configuração Avançada
+
+### Configurar MySQL (Produção)
+
+1. **Criar banco de dados:**
+```sql
+CREATE DATABASE leituras_db;
+CREATE USER 'leituras_user'@'localhost' IDENTIFIED BY 'senha_segura';
+GRANT ALL PRIVILEGES ON leituras_db.* TO 'leituras_user'@'localhost';
+FLUSH PRIVILEGES;
 ```
 
-Opções de período: `hora`, `dia`, `semana`
-
-### Coletar arquivos estáticos (produção)
-```bash
-python manage.py collectstatic
+2. **Atualizar `.env`:**
+```env
+USE_MYSQL=True
+DB_DATABASE=leituras_db
+DB_USERNAME=leituras_user
+DB_PASSWORD=senha_segura
+DB_HOST=localhost
+DB_PORT=3306
 ```
 
-### Criar migrations
-```bash
-python manage.py makemigrations
-```
-
-### Aplicar migrations
+3. **Executar migrações:**
 ```bash
 python manage.py migrate
 ```
 
-### Executar servidor de desenvolvimento
-```bash
-python manage.py runserver
+### Configurar Modo Escuro (Dark Mode)
+
+A aplicação detecta automaticamente a preferência do sistema e salva no localStorage. Clique no ícone de brilho (☀️/🌙) na navbar para alternar temas.
+
+### Habilitar HTTPS
+
+Editar `leituras_project/settings.py`:
+```python
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 ```
 
-### Build de assets (desenvolvimento)
+---
+
+## 🚢 Deploy
+
+### Render.com (Recomendado)
+
+1. **Criar conta em** https://render.com
+2. **Conectar repositório GitHub**
+3. **Configurar variáveis de ambiente:**
+   - `SECRET_KEY`
+   - `DEBUG=False`
+   - `DATABASE_URL` (MySQL)
+4. **Deploy automático**
+
+### Railway.app
+
 ```bash
-npm run dev
+# Instalar CLI do Railway
+npm i -g @railway/cli
+
+# Login
+railway login
+
+# Deploy
+railway up
 ```
 
-### Build de assets (produção)
+### Heroku (Legado)
+
 ```bash
-npm run build
+# Instalar Heroku CLI
+# Deploy
+heroku create seu-app-name
+git push heroku main
 ```
 
-## 🎨 Frontend
+### Docker
 
-O frontend utiliza:
-- **Bootstrap 5** para layout responsivo
-- **Tailwind CSS** (via Vite) para estilização
-- **Chart.js** para gráficos (se necessário)
-- **Vite** para build de assets
+Criar `Dockerfile`:
+```dockerfile
+FROM python:3.11-slim
 
-Principais componentes:
-- Navbar responsivo
-- Cards com estatísticas
-- Filtros dinâmicos
-- Tabela de dados responsiva
-- Sistema de mensagens (alerts)
+WORKDIR /app
 
-## 📊 Funcionalidades
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-✅ Listagem de dados agregados  
-✅ Filtros por cliente, equipamento e data  
-✅ Agregação de dados por hora/dia/semana  
-✅ Exportação para CSV  
-✅ Dashboard com estatísticas  
-✅ Design responsivo com Bootstrap  
-✅ Sistema de mensagens (success/error)  
-✅ Interface administrativa Django  
+COPY . .
 
-## 🗄️ Banco de Dados
+RUN python manage.py collectstatic --noinput
 
-O sistema utiliza as seguintes tabelas:
+CMD ["gunicorn", "leituras_project.wsgi:application", "--bind", "0.0.0.0:8000"]
+```
 
-- `corrente_brunidores` - Leituras de corrente dos brunidores
-- `corrente_descascadores` - Leituras de corrente dos descascadores
-- `corrente_polidores` - Leituras de corrente dos polidores
-- `temperaturas` - Leituras de temperatura
-- `umidades` - Leituras de umidade
-- `grandezas_eletricas` - Grandezas elétricas (tensão, corrente, potência)
-- `dados_agregados` - Dados agregados por período
+Executar:
+```bash
+docker build -t dashboard-leituras .
+docker run -p 8000:8000 -e SECRET_KEY=sua-chave dashboard-leituras
+```
+
+---
+
+## 📊 Tecnologias Utilizadas
+
+| Camada | Tecnologia | Versão |
+|--------|-----------|--------|
+| **Backend** | Django | 4.2.7 |
+| **Banco** | MySQL / SQLite | - |
+| **Frontend** | Bootstrap 5 | 5.3.3 |
+| **CSS Extra** | Tailwind CSS | 3.x |
+| **Gráficos** | Chart.js | 4.4.0 |
+| **Ícones** | Material Icons | Latest |
+| **Server** | Gunicorn | 22.0.0 |
+
+---
 
 ## 🔐 Segurança
 
-- CSRF Protection habilitado
-- SQL Injection protection (Django ORM)
-- XSS Protection
-- Configurações de segurança no settings.py
-- Validação de dados nos models
+### Boas Práticas Implementadas
 
-## 🛠️ Tecnologias
+✅ **CSRF Protection**: Django CSRF middleware ativo
+✅ **SQL Injection Prevention**: ORM Django
+✅ **XSS Protection**: Django template escaping
+✅ **Password Hashing**: PBKDF2 com Django
+✅ **HTTPS**: Configurável em produção
+✅ **Secret Key**: Variável de ambiente
 
-- **Backend:** Django 4.2.7
-- **Database:** MySQL (produção) / SQLite (desenvolvimento)
-- **Frontend:** Bootstrap 5, Tailwind CSS, Vite
-- **JavaScript:** Chart.js, Axios
+### Checklist de Segurança para Produção
 
-## 📝 Notas
+- [ ] `DEBUG=False`
+- [ ] `SECRET_KEY` alterada
+- [ ] `ALLOWED_HOSTS` configurado
+- [ ] Banco de dados seguro (senha forte)
+- [ ] HTTPS/SSL ativo
+- [ ] Backup automático do banco
+- [ ] Monitoramento de erros (Sentry)
 
-- Timezone configurado para `America/Sao_Paulo`
-- Charset UTF-8 em todo o sistema
-- Compatível com MySQL 5.7+
-- Responsive design para mobile
-- Assets compilados via Vite para otimização
+---
 
-## 🚀 Deploy
+## 📝 Comandos Úteis Django
 
-Para produção:
+```bash
+# Criar migrações
+python manage.py makemigrations
 
-1. Configure `DEBUG = False` em `settings.py`
-2. Configure `ALLOWED_HOSTS` com seu domínio
-3. Execute `python manage.py collectstatic`
-4. Configure servidor web (Nginx/Apache) e WSGI (Gunicorn/uWSGI)
-5. Configure variáveis de ambiente no servidor
+# Aplicar migrações
+python manage.py migrate
+
+# Criar superusuário
+python manage.py createsuperuser
+
+# Shell interativo
+python manage.py shell
+
+# Executar testes
+python manage.py test
+
+# Coletar arquivos estáticos
+python manage.py collectstatic
+
+# Limpar cache
+python manage.py clear_cache
+
+# Contar registros
+python manage.py contar_registros
+```
+
+---
+
+## 🐛 Troubleshooting
+
+### Erro: "ModuleNotFoundError: No module named 'django'"
+**Solução:** Ativar ambiente virtual
+```bash
+venv\Scripts\activate  # Windows
+source venv/bin/activate  # macOS/Linux
+```
+
+### Erro: "Connection refused (port 3306)"
+**Solução:** Verificar se MySQL está rodando
+```bash
+# Windows
+net start MySQL80  # ou seu nome de serviço
+
+# macOS
+brew services start mysql
+
+# Linux
+sudo systemctl start mysql
+```
+
+### Erro: "ProgrammingError: table does not exist"
+**Solução:** Executar migrações
+```bash
+python manage.py migrate
+```
+
+### Porta 8000 já em uso
+**Solução:** Usar outra porta
+```bash
+python manage.py runserver 8001
+```
+
+---
+
+## 📚 Documentação Adicional
+
+- [Django Documentation](https://docs.djangoproject.com)
+- [Bootstrap 5 Docs](https://getbootstrap.com/docs/5.3/)
+- [Chart.js Docs](https://www.chartjs.org/docs/latest/)
+- [Tailwind CSS Docs](https://tailwindcss.com/docs)
+
+---
+
+## 🤝 Contribuindo
+
+1. Fazer fork do projeto
+2. Criar branch para feature (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push para branch (`git push origin feature/AmazingFeature`)
+5. Abrir Pull Request
+
+---
 
 ## 📄 Licença
 
-Este projeto está sob a licença MIT.
+Este projeto está sob licença MIT. Veja `LICENSE` para detalhes.
+
+---
+
+## 👨‍💻 Autor
+
+**Adrion Montelli**
+- GitHub: [@adrion-montelli](https://github.com/adrion-montelli)
+
+---
+
+## 🎉 Agradecimentos
+
+- Django Foundation
+- Bootstrap Community
+- Chart.js Contributors
+- Comunidade Python Brasil
+
+---
+
+## 📞 Suporte
+
+Para reportar bugs ou sugerir features:
+1. Abrir issue no GitHub
+2. Descrever problema detalhadamente
+3. Incluir logs/screenshots se necessário
+
+**Última atualização:** Novembro 2024

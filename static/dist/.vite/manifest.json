@@ -1,0 +1,16 @@
+{
+  "static/src/css/app.css": {
+    "file": "assets/main-B4AVvFIn.css",
+    "src": "static/src/css/app.css",
+    "isEntry": true,
+    "names": [
+      "main.css"
+    ]
+  },
+  "static/src/js/app.js": {
+    "file": "assets/app-DFiZwrUO.js",
+    "name": "app",
+    "src": "static/src/js/app.js",
+    "isEntry": true
+  }
+}

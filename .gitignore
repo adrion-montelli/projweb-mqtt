@@ -1,42 +1,12 @@
 # Python
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
-
-# Django
-*.log
-*.pot
-*.pyc
 __pycache__/
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-/staticfiles/
-/media/
+*.pyc
+eggs/
+.eggo/
+.installed.cfg
+*.eg__/
 *.mo
-
-# Virtual Environment
-venv/
-env/
-ENV/
-.venv
+db.sqlite3
 
 # IDE
 .vscode/
@@ -59,15 +29,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Vite
-static/dist/
-static/hot
-
-# Database
-*.sqlite
-*.sqlite3
-database.sqlite
-
 # OS
 Thumbs.db
 .DS_Store
@@ -76,10 +37,6 @@ Thumbs.db
 htmlcov/
 .coverage
 .coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
 
 # Jupyter Notebook
 .ipynb_checkpoints

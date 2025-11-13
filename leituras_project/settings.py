@@ -61,17 +61,17 @@ WSGI_APPLICATION = 'leituras_project.wsgi.application'
 # Database
 # Configure com suas credenciais MySQL ou use SQLite para desenvolvimento
 # Carrega do arquivo .env ou variáveis de ambiente
-USE_MYSQL = config('USE_MYSQL', default='False', cast=bool)
+USE_MYSQL = config('USE_MYSQL', default=False, cast=bool)
 
 if USE_MYSQL:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': config('DB_DATABASE', default='leituras_db'),
-            'USER': config('DB_USERNAME', default='root'),
-            'PASSWORD': config('DB_PASSWORD', default=''),
-            'HOST': config('DB_HOST', default='127.0.0.1'),
-            'PORT': config('DB_PORT', default='3306', cast=int),
+            'NAME': config('DB_DATABASE'),
+            'USER': config('DB_USERNAME'),
+            'PASSWORD': config('DB_PASSWORD'),
+            'HOST': config('DB_HOST'),
+            'PORT': config('DB_PORT', cast=int),
             'OPTIONS': {
                 'charset': 'utf8mb4',
                 'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
@@ -83,7 +83,7 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'database' / 'database.sqlite',
+            'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
 
@@ -121,3 +121,8 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Authentication settings
+LOGIN_REDIRECT_URL = '/dashboard/'
+LOGOUT_REDIRECT_URL = '/accounts/login/'
+LOGIN_URL = '/accounts/login/'

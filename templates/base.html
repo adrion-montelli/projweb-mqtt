@@ -1,123 +1,159 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Sistema de Leituras{% endblock %}</title>
+    <meta name="description" content="Dashboard de Leituras de Sensores - Sistema de Monitoramento em Tempo Real">
+    <meta name="theme-color" content="#0d6efd">
     
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <title>{% block title %}Dashboard{% endblock %} - Leituras de Sensores</title>
+    
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
+    <link rel="apple-touch-icon" href="{% static 'images/favicon.ico' %}">
+    
+    <!-- Bootstrap 5 CSS (via CDN) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <!-- Tailwind CSS (via CDN) - Para componentes modernos -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Stylesheet Customizado -->
+    <link rel="stylesheet" href="{% static 'src/css/style.css' %}">
+
+    {% block extra_css %}{% endblock %}
     
     <style>
-        :root {
-            --primary-color: #2563eb;
-            --secondary-color: #64748b;
-            --success-color: #10b981;
-            --danger-color: #ef4444;
-            --warning-color: #f59e0b;
-        }
-        
+        /* Garantir que o conteúdo não fica atrás da navbar fixa */
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8fafc;
+            padding-top: 56px;
         }
         
+        /* Ajustes para tema escuro */
+        [data-bs-theme="dark"] body {
+            background-color: #1a1a1a;
+            color: #e9ecef;
+        }
+        
+        /* Navbar customizada */
         .navbar {
-            background: linear-gradient(135deg, var(--primary-color), #1e40af);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
         }
         
-        .card {
-            border: none;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            transition: transform 0.2s, box-shadow 0.2s;
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.3rem;
+            letter-spacing: 0.3px;
         }
         
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+        /* Ícone de tema */
+        .theme-switcher {
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            font-size: 1.5rem;
         }
         
-        .table {
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        
-        .table thead {
-            background: linear-gradient(135deg, var(--primary-color), #1e40af);
-            color: white;
-        }
-        
-        .btn-primary {
-            background: var(--primary-color);
-            border: none;
-            transition: all 0.3s;
-        }
-        
-        .btn-primary:hover {
-            background: #1e40af;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
-        }
-        
-        .stat-card {
-            border-left: 4px solid var(--primary-color);
-        }
-        
-        @media (max-width: 768px) {
-            .table {
-                font-size: 0.85rem;
-            }
+        .theme-switcher:hover {
+            transform: scale(1.1);
         }
     </style>
-    
-    {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+    <!-- Navbar Fixa -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
         <div class="container-fluid">
-            <a class="navbar-brand fw-bold" href="{% url 'leituras:index' %}">
-                <i class="bi bi-graph-up me-2"></i>
-                Sistema de Leituras
+            <!-- Brand -->
+            <a class="navbar-brand" href="{% url 'dashboard' %}">
+                <i class="material-icons" style="vertical-align: middle; margin-right: 8px;">dashboard</i>
+                Leituras
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            
+            <!-- Toggler para Mobile -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
+            
+            <!-- Menu Items -->
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'leituras:index' %}">
-                            <i class="bi bi-house me-1"></i>Início
-                        </a>
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <!-- Tema Switcher -->
+                    <li class="nav-item me-3">
+                        <span class="material-icons theme-switcher" id="theme-toggle-btn" title="Alternar tema">brightness_4</span>
                     </li>
+                    
+                    {% if user.is_authenticated %}
+                        <!-- Usuário autenticado -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="material-icons" style="vertical-align: middle;">account_circle</i>
+                                {{ user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item" href="#">Perfil</a></li>
+                                <li><a class="dropdown-item" href="#">Configurações</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'logout' %}">
+                                    <i class="material-icons" style="vertical-align: middle; font-size: 1.2rem;">logout</i>
+                                    Sair
+                                </a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <!-- Usuário não autenticado -->
+                        <li class="nav-item">
+                            <a class="btn btn-primary btn-sm" href="{% url 'login' %}">
+                                <i class="material-icons" style="vertical-align: middle;">login</i>
+                                Login
+                            </a>
+                        </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
     </nav>
 
-    <!-- Messages -->
-    {% if messages %}
-    <div class="container">
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
+    <!-- Conteúdo Principal -->
+    <main class="container-fluid mt-4 mb-5">
+        <!-- Mensagens de Sistema -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    <i class="material-icons" style="vertical-align: middle;">{{ message.tags }}</i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
 
-    <!-- Main Content -->
-    <main class="container-fluid px-4">
+        <!-- Bloco de Conteúdo -->
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Bootstrap 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+    <!-- Footer (Opcional) -->
+    <footer class="bg-dark text-light text-center py-4 mt-5">
+        <div class="container-fluid">
+            <p class="mb-0">
+                <small>&copy; 2025 Dashboard para Monitoramento Industrial. Todos os direitos reservados.</small>
+            </p>
+            <p class="mb-0">
+                <small>Desenvolvido por Adrion Montelli e Lucas Vitor Larroide</small>
+            </p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <!-- Chart.js (para gráficos) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+
+    <!-- Dashboard Scripts -->
+    <script src="{% static 'src/js/dashboard.js' %}"></script>
+
     {% block extra_js %}{% endblock %}
 </body>
 </html>
